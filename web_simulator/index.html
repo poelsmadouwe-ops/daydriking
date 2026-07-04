@@ -693,10 +693,15 @@
     <h1>Daydrinking<br><span style="color: var(--accent);">Royale</span></h1>
     <div class="tagline">Sudden Death Multiplayer Drankspel</div>
     
-    <button class="btn-menu" onclick="launchApp('demo')">📱 Snelle Demo (Speel Nu)</button>
-    <button class="btn-menu" onclick="toggleTestMenu()">🎮 Test Minigames</button>
-    <button class="btn-menu" onclick="launchApp('sander')">👑 Speel als Sander (Host)</button>
-    <button class="btn-menu" onclick="launchApp('lisa')">🙋 Speel als Lisa</button>
+    <div style="width: 100%; max-width: 320px; margin-bottom: 20px;">
+      <div class="config-label" style="margin-bottom: 8px; text-align: center; font-size: 0.85rem; letter-spacing: 1px;">JOUW SPELERSNAAM:</div>
+      <input type="text" id="player-name-input" class="config-input" placeholder="Voer je naam in..." style="padding: 12px; font-size: 1.1rem; border-radius: 12px;" maxlength="15">
+    </div>
+
+    <button class="btn-menu" onclick="launchMultiplayer(true)">👑 Host Nieuw Spel</button>
+    <button class="btn-menu" onclick="launchMultiplayer(false)">🙋 Join Bestaand Spel</button>
+    <button class="btn-menu" style="border-color: rgba(139, 92, 246, 0.4); opacity: 0.85;" onclick="launchApp('demo')">📱 Snelle Demo (Solo)</button>
+    <button class="btn-menu" style="border-color: rgba(139, 92, 246, 0.4); opacity: 0.85;" onclick="toggleTestMenu()">🎮 Test Minigames</button>
 
     <!-- Test Menu Grid -->
     <div class="grid-test-selector" id="test-menu" style="display:none;">
@@ -718,7 +723,7 @@
   <!-- 2. Main Mobile Game Viewport -->
   <div class="app-viewport" id="app-viewport">
     <div class="app-header">
-      <span class="player-pill" id="player-label">Sander</span>
+      <span class="player-pill" id="player-label">Speler</span>
       <span class="sip-pill" id="sip-label">🍷 0 Slokken</span>
     </div>
 
@@ -736,12 +741,14 @@
 
   <script>
     let currentMode = 'demo';
-    let localPlayer = 'Sander';
+    let localPlayer = 'Gast';
     let sipsCount = 0;
     let jokerUsed = false;
     let loopInterval = null;
     let canvasLoop = null;
     let ws = null;
+    let isHost = false;
+    const playerUuid = 'player_' + Math.random().toString(36).substring(2, 11);
     
     // Web Audio API voor luid alarm geluid
     let audioCtx = null;
@@ -2248,6 +2255,27 @@
     }
 
     // --- NETWERK MODE ---
+    function launchMultiplayer(host) {
+      const nameInput = document.getElementById('player-name-input');
+      const name = nameInput.value.trim();
+      if (!name) {
+        showToast('Voer eerst een naam in! 📛', true);
+        return;
+      }
+      
+      testModeActive = false;
+      isHost = host;
+      localPlayer = name;
+      currentMode = 'online';
+      
+      document.getElementById('selection-screen').style.display = 'none';
+      document.getElementById('app-viewport').style.display = 'flex';
+      document.getElementById('player-label').innerText = localPlayer;
+      document.getElementById('extra-btn').innerText = 'Menu';
+      
+      connectWebSocket();
+    }
+
     function connectWebSocket() {
       const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
       const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -2256,15 +2284,13 @@
       if (isLocal) {
         wsUrl = `ws://localhost:8081`;
       } else {
-        // Vul hier uw uiteindelijke gehoste backend URL in (bijvoorbeeld van Render of Railway)
-        // Bijvoorbeeld: `wss://daydrinking-royale-backend.onrender.com`
         wsUrl = `${wsProtocol}//${window.location.hostname}`;
       }
       
       ws = new WebSocket(wsUrl);
 
       ws.onopen = () => {
-        if (localPlayer === 'Sander') {
+        if (isHost) {
           ws.send(JSON.stringify({ action: 'CREATE_ROOM' }));
         } else {
           renderJoinPrompt();
@@ -2285,14 +2311,18 @@
       document.getElementById('game-screen-area').innerHTML = `
         <div class="card-layout">
           <div class="card-title">VOER KAMER CODE IN</div>
-          <input type="text" id="ws-code" class="config-input" placeholder="CODE">
-          <button class="btn-game-option" onclick="submitJoinWS()">JOIN KAMER</button>
+          <input type="text" id="ws-code" class="config-input" placeholder="CODE" style="max-width: 260px; text-transform: uppercase;">
+          <button class="btn-game-option" onclick="submitJoinWS()" style="max-width: 260px; background: var(--primary);">JOIN KAMER</button>
         </div>
       `;
     }
 
     function submitJoinWS() {
-      const code = document.getElementById('ws-code').value.toUpperCase();
+      const code = document.getElementById('ws-code').value.toUpperCase().trim();
+      if (!code) {
+        showToast('Voer een kamercode in! 🔑', true);
+        return;
+      }
       joinRoom(code);
     }
 
@@ -2301,25 +2331,36 @@
         action: 'JOIN_ROOM',
         roomId: code,
         name: localPlayer,
-        id: localPlayer === 'Sander' ? 'player_uuid_1' : 'player_uuid_2'
+        id: playerUuid
       }));
     }
 
     function handleOnlineGameState(state) {
       document.getElementById('game-title-banner').innerText = state.status;
       if (state.status === 'LOBBY') {
-        if (localPlayer === 'Sander') {
+        if (isHost) {
           document.getElementById('game-screen-area').innerHTML = `
             <div class="card-layout">
-              <div class="card-title">Kamer Code: ${state.roomId}</div>
-              <button class="btn-game-option" onclick="startOnlineGame()">START SPEL</button>
+              <div class="card-title" style="font-size: 1.1rem; color: var(--accent);">KAMER CODE:</div>
+              <div style="font-size: 3rem; font-weight: 900; letter-spacing: 4px; color: var(--warning); margin: 10px 0;">${state.roomId}</div>
+              <p style="margin-bottom:20px; opacity:0.8; font-size: 0.95rem;">Geef deze code aan je vrienden!</p>
+              
+              <div style="margin-bottom: 20px;">
+                <div class="config-label" style="font-size: 0.8rem; margin-bottom: 5px;">Aantal spelers in lobby:</div>
+                <div style="font-weight: 800; font-size: 1.2rem; color: #fff;">${Object.keys(state.players).length} speler(s)</div>
+              </div>
+
+              <button class="btn-game-option" onclick="startOnlineGame()" style="max-width: 280px; background: var(--primary);">START SPEL 🚀</button>
             </div>
           `;
         } else {
           document.getElementById('game-screen-area').innerHTML = `
             <div class="card-layout">
-              <p>Verbonden met lobby ${state.roomId}</p>
-              <p style="margin-top:10px; color:var(--accent);">Wachten op start...</p>
+              <p style="font-size: 1.1rem;">Verbonden met lobby <strong style="color: var(--warning);">${state.roomId}</strong></p>
+              <p style="margin-top:20px; color:var(--accent); font-weight: 800; animation: pulseBorder 1.5s infinite;">Wachten tot de host start...</p>
+              <div style="margin-top: 30px; font-size: 0.9rem; opacity: 0.7;">
+                Totaal aantal spelers: ${Object.keys(state.players).length}
+              </div>
             </div>
           `;
         }
