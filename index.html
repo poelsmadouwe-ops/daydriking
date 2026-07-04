@@ -1,0 +1,2545 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Daydrinking Royale</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #07030F;
+      --surface: #120A24;
+      --surface-glow: #1D113A;
+      --primary: #8B5CF6;
+      --primary-glow: rgba(139, 92, 246, 0.35);
+      --accent: #06B6D4;
+      --accent-glow: rgba(6, 182, 212, 0.35);
+      --error: #EF4444;
+      --success: #10B981;
+      --warning: #F59E0B;
+      --text: #F3F4F6;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Outfit', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: absolute;
+      width: 200%;
+      height: 200%;
+      top: -50%;
+      left: -50%;
+      background-image: 
+        linear-gradient(rgba(139, 92, 246, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(139, 92, 246, 0.03) 1px, transparent 1px);
+      background-size: 30px 30px;
+      transform: rotate(15deg);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .screen-panel {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      padding: 24px;
+      z-index: 10;
+      background: radial-gradient(circle at center, #150B2E 0%, var(--bg) 100%);
+      overflow-y: auto;
+      justify-content: center;
+      align-items: center;
+    }
+
+    h1 {
+      font-size: 2.8rem;
+      font-weight: 900;
+      letter-spacing: 3px;
+      text-align: center;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--primary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+      text-shadow: 0 0 40px var(--primary-glow);
+      text-transform: uppercase;
+    }
+
+    .tagline {
+      color: #a78bfa;
+      font-size: 1rem;
+      margin-bottom: 30px;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .btn-menu {
+      width: 100%;
+      max-width: 320px;
+      background: rgba(18, 10, 36, 0.8);
+      border: 2px solid var(--primary);
+      color: #fff;
+      padding: 16px;
+      font-size: 1.1rem;
+      font-weight: 800;
+      border-radius: 20px;
+      margin: 8px 0;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .btn-menu:hover, .btn-menu:active {
+      transform: translateY(-2px);
+      border-color: var(--accent);
+      box-shadow: 0 12px 30px var(--accent-glow);
+      background: var(--primary);
+    }
+
+    .grid-test-selector {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      width: 100%;
+      max-width: 340px;
+      margin-top: 15px;
+    }
+
+    .btn-grid-game {
+      background: var(--surface);
+      border: 1px solid var(--primary);
+      color: #fff;
+      padding: 12px;
+      font-weight: 800;
+      border-radius: 16px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: all 0.2s;
+    }
+
+    .btn-grid-game:active {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .app-viewport {
+      display: none;
+      flex-direction: column;
+      width: 100%;
+      height: 100vh;
+      padding: 20px;
+      z-index: 5;
+      position: relative;
+    }
+
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .player-pill {
+      background: var(--surface);
+      border: 1px solid var(--primary);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: var(--accent);
+    }
+
+    .sip-pill {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid var(--error);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: var(--error);
+    }
+
+    .game-title-banner {
+      text-align: center;
+      font-size: 1.4rem;
+      font-weight: 900;
+      color: var(--text);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin: 10px 0;
+      min-height: 2.2rem;
+    }
+
+    .game-screen-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: rgba(18, 10, 36, 0.6);
+      border: 1px solid rgba(139, 92, 246, 0.2);
+      border-radius: 24px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: inset 0 0 30px rgba(0,0,0,0.6);
+      backdrop-filter: blur(10px);
+      padding: 16px;
+    }
+
+    .touch-surface {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      touch-action: none;
+    }
+
+    .btn-big-target {
+      width: 190px;
+      height: 190px;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
+      border: 4px dashed var(--primary);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: all 0.2s ease;
+      animation: pulseBorder 2s infinite;
+      user-select: none;
+      touch-action: none;
+    }
+
+    .btn-big-target.pressed {
+      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+      border-color: var(--accent);
+      box-shadow: 0 0 40px var(--accent);
+      transform: scale(0.95);
+    }
+
+    .btn-big-target span {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      text-align: center;
+      pointer-events: none;
+    }
+
+    @keyframes pulseBorder {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.03); }
+      100% { transform: scale(1); }
+    }
+
+    .app-footer {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 15px;
+      gap: 15px;
+    }
+
+    .btn-footer {
+      flex: 1;
+      background: var(--surface);
+      border: 2px solid var(--primary);
+      color: #fff;
+      padding: 14px;
+      border-radius: 16px;
+      font-weight: 800;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+    }
+
+    .btn-footer:active {
+      background: var(--primary);
+      box-shadow: 0 0 15px var(--primary);
+    }
+
+    .lobby-config-panel {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .config-label {
+      font-size: 0.95rem;
+      color: #a78bfa;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .config-input {
+      background: rgba(0,0,0,0.3);
+      border: 2px solid var(--primary);
+      border-radius: 16px;
+      color: #fff;
+      padding: 14px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      outline: none;
+      text-align: center;
+      width: 100%;
+    }
+
+    .config-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      background: #080313;
+      border-radius: 16px;
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+      touch-action: none;
+    }
+
+    .card-layout {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      text-align: center;
+      padding: 10px;
+      width: 100%;
+    }
+
+    .card-title {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--warning);
+      margin-bottom: 12px;
+    }
+
+    .card-body {
+      font-size: 1.1rem;
+      line-height: 1.5;
+      margin-bottom: 25px;
+    }
+
+    .btn-game-option {
+      width: 100%;
+      background: var(--surface);
+      border: 2px solid var(--primary);
+      color: #fff;
+      padding: 14px;
+      border-radius: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      margin: 8px 0;
+      transition: all 0.2s;
+    }
+
+    .btn-game-option:active {
+      background: var(--primary);
+    }
+
+    .countdown-timer-circle {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      border: 4px solid var(--warning);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: var(--warning);
+      margin-bottom: 20px;
+    }
+
+    .curve-btn-container {
+      display: flex;
+      width: 100%;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .btn-curve {
+      flex: 1;
+      padding: 16px;
+      font-size: 1.2rem;
+      font-weight: 900;
+      color: #fff;
+      background: var(--surface);
+      border: 2px solid var(--primary);
+      border-radius: 16px;
+      cursor: pointer;
+      touch-action: none;
+      user-select: none;
+    }
+
+    .btn-curve:active {
+      background: var(--primary);
+    }
+
+    .draw-toolbar {
+      display: flex;
+      width: 100%;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      gap: 10px;
+    }
+
+    .color-picker {
+      display: flex;
+      gap: 8px;
+    }
+
+    .color-dot {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      cursor: pointer;
+    }
+
+    .color-dot.active {
+      border-color: #fff;
+      transform: scale(1.1);
+    }
+
+    .thickness-picker {
+      display: flex;
+      gap: 8px;
+    }
+
+    .thickness-btn {
+      background: var(--surface);
+      border: 1px solid var(--primary);
+      color: #fff;
+      padding: 4px 10px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .thickness-btn.active {
+      background: var(--primary);
+      border-color: var(--accent);
+    }
+
+    .simon-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      width: 100%;
+      max-width: 250px;
+      margin: auto 0;
+    }
+
+    .simon-pad {
+      aspect-ratio: 1;
+      border-radius: 20px;
+      opacity: 0.4;
+      cursor: pointer;
+      transition: transform 0.1s, opacity 0.15s;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+
+    .simon-pad:active {
+      transform: scale(0.95);
+    }
+
+    .simon-pad.lit {
+      opacity: 1.0 !important;
+      box-shadow: 0 0 35px var(--accent);
+    }
+
+    /* Pulsating lock animation for stand-by mode */
+    .lock-icon {
+      width: 80px;
+      height: 80px;
+      border: 4px solid var(--primary);
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 2.2rem;
+      animation: pulseLock 2.5s infinite;
+      margin-bottom: 24px;
+    }
+
+    @keyframes pulseLock {
+      0% { transform: scale(1); box-shadow: 0 0 10px var(--primary-glow); }
+      50% { transform: scale(1.1); box-shadow: 0 0 30px var(--primary); }
+      100% { transform: scale(1); box-shadow: 0 0 10px var(--primary-glow); }
+    }
+
+    /* Result overlay styles */
+    .result-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(4, 2, 10, 0.88);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      z-index: 1000;
+      animation: fadeInOverlay 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      text-align: center;
+    }
+
+    @keyframes fadeInOverlay {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .result-card {
+      background: linear-gradient(135deg, rgba(20, 11, 42, 0.9) 0%, rgba(10, 5, 22, 0.95) 100%);
+      border: 2px solid rgba(139, 92, 246, 0.25);
+      border-radius: 28px;
+      padding: 28px 24px;
+      width: 100%;
+      max-width: 320px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 
+        0 24px 50px rgba(0, 0, 0, 0.7),
+        0 0 40px rgba(139, 92, 246, 0.15),
+        inset 0 0 15px rgba(255, 255, 255, 0.03);
+      animation: popResultCard 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .result-card.win-card {
+      border-color: rgba(16, 185, 129, 0.4);
+      box-shadow: 
+        0 24px 50px rgba(0, 0, 0, 0.7),
+        0 0 40px rgba(16, 185, 129, 0.2),
+        inset 0 0 15px rgba(16, 185, 129, 0.05);
+    }
+
+    .result-card.lose-card {
+      border-color: rgba(239, 68, 68, 0.4);
+      box-shadow: 
+        0 24px 50px rgba(0, 0, 0, 0.7),
+        0 0 40px rgba(239, 68, 68, 0.2),
+        inset 0 0 15px rgba(239, 68, 68, 0.05);
+    }
+
+    /* Elegant rotating neon accent ring inside the card */
+    .result-card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: conic-gradient(from 0deg, transparent, rgba(139, 92, 246, 0.15), transparent 40%);
+      animation: rotateCardGlow 8s linear infinite;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .result-card.win-card::before {
+      background: conic-gradient(from 0deg, transparent, rgba(16, 185, 129, 0.15), transparent 40%);
+    }
+
+    .result-card.lose-card::before {
+      background: conic-gradient(from 0deg, transparent, rgba(239, 68, 68, 0.15), transparent 40%);
+    }
+
+    /* Keep contents on top of the rotating glow gradient */
+    .result-card > * {
+      position: relative;
+      z-index: 2;
+    }
+
+    @keyframes rotateCardGlow {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes popResultCard {
+      from { transform: translateY(20px) scale(0.92); opacity: 0; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
+    .result-badge {
+      font-size: 0.8rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      padding: 6px 16px;
+      border-radius: 20px;
+      margin-bottom: 18px;
+    }
+
+    .result-badge.win {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid var(--success);
+      color: var(--success);
+      text-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+    }
+
+    .result-badge.lose {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid var(--error);
+      color: var(--error);
+      text-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+    }
+
+    .result-title {
+      font-size: 1.8rem;
+      font-weight: 900;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .result-msg {
+      font-size: 0.95rem;
+      color: #9ca3af;
+      margin-bottom: 24px;
+      line-height: 1.5;
+      max-width: 280px;
+    }
+
+    .sip-indicator {
+      font-size: 3.8rem;
+      margin-bottom: 15px;
+      animation: bounceCup 2s infinite ease-in-out;
+      filter: drop-shadow(0 0 15px rgba(139, 92, 246, 0.4));
+    }
+
+    .result-card.win-card .sip-indicator {
+      filter: drop-shadow(0 0 15px rgba(16, 185, 129, 0.4));
+    }
+
+    .result-card.lose-card .sip-indicator {
+      filter: drop-shadow(0 0 15px rgba(239, 68, 68, 0.5));
+    }
+
+    @keyframes bounceCup {
+      0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+      33% { transform: translateY(-8px) rotate(-6deg) scale(1.05); }
+      66% { transform: translateY(-4px) rotate(6deg) scale(1.05); }
+    }
+
+    /* Floating canvas notification for game warnings without blocking */
+    .game-toast-notice {
+      position: absolute;
+      top: 15px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background: rgba(239, 68, 68, 0.95);
+      border: 1px solid #ff7b7b;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5), 0 0 15px var(--error);
+      color: #fff;
+      font-weight: 800;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 8px 18px;
+      border-radius: 12px;
+      z-index: 500;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .game-toast-notice.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. Splash & Selection Menu -->
+  <div class="screen-panel" id="selection-screen">
+    <h1>Daydrinking<br><span style="color: var(--accent);">Royale</span></h1>
+    <div class="tagline">Sudden Death Multiplayer Drankspel</div>
+    
+    <div style="width: 100%; max-width: 320px; margin-bottom: 20px;">
+      <div class="config-label" style="margin-bottom: 8px; text-align: center; font-size: 0.85rem; letter-spacing: 1px;">JOUW SPELERSNAAM:</div>
+      <input type="text" id="player-name-input" class="config-input" placeholder="Voer je naam in..." style="padding: 12px; font-size: 1.1rem; border-radius: 12px;" maxlength="15">
+    </div>
+
+    <button class="btn-menu" onclick="launchMultiplayer(true)">👑 Host Nieuw Spel</button>
+    <button class="btn-menu" onclick="launchMultiplayer(false)">🙋 Join Bestaand Spel</button>
+    <button class="btn-menu" style="border-color: rgba(139, 92, 246, 0.4); opacity: 0.85;" onclick="launchApp('demo')">📱 Snelle Demo (Solo)</button>
+    <button class="btn-menu" style="border-color: rgba(139, 92, 246, 0.4); opacity: 0.85;" onclick="toggleTestMenu()">🎮 Test Minigames</button>
+
+    <!-- Test Menu Grid -->
+    <div class="grid-test-selector" id="test-menu" style="display:none;">
+      <button class="btn-grid-game" onclick="launchTestGame('STATIC_RIDDLE')">Raadsel</button>
+      <button class="btn-grid-game" onclick="launchTestGame('STATIC_ESTIMATION')">Dichtbij Zitten</button>
+      <button class="btn-grid-game" onclick="launchTestGame('STATIC_BOMB')">Tijdbom</button>
+      <button class="btn-grid-game" onclick="launchTestGame('STATIC_DRAW')">Tekenen</button>
+      <button class="btn-grid-game" onclick="launchTestGame('STATIC_DILEMMA')">Dilemma</button>
+      <button class="btn-grid-game" onclick="launchTestGame('DYNAMIC_ROULETTE')">Roulette</button>
+      <button class="btn-grid-game" onclick="launchTestGame('DYNAMIC_STACKER')">Stapelaar</button>
+      <button class="btn-grid-game" onclick="launchTestGame('DYNAMIC_BUMPERBAL')">Bumperbal</button>
+      <button class="btn-grid-game" onclick="launchTestGame('DYNAMIC_MAZE')">Midgetgolf</button>
+      <button class="btn-grid-game" onclick="launchTestGame('DYNAMIC_CURVE')">Curve Fever</button>
+      <button class="btn-grid-game" onclick="launchTestGame('DYNAMIC_KLEURENCODE')">Kleurencode</button>
+      <button class="btn-grid-game" onclick="launchTestGame('DYNAMIC_BLIND_STEERING')">Blind Sturen</button>
+    </div>
+  </div>
+
+  <!-- 2. Main Mobile Game Viewport -->
+  <div class="app-viewport" id="app-viewport">
+    <div class="app-header">
+      <span class="player-pill" id="player-label">Speler</span>
+      <span class="sip-pill" id="sip-label">🍷 0 Slokken</span>
+    </div>
+
+    <div class="game-title-banner" id="game-title-banner">LOBBY</div>
+
+    <div class="game-screen-area" id="game-screen-area">
+      <!-- Dynamic Content -->
+    </div>
+
+    <div class="app-footer">
+      <button class="btn-footer" id="joker-btn" onclick="activateJoker()">🌟 Joker</button>
+      <button class="btn-footer" id="extra-btn" style="background: var(--error);" onclick="triggerEmergency()">🚨 Menu</button>
+    </div>
+  </div>
+
+  <script>
+    let currentMode = 'demo';
+    let localPlayer = 'Gast';
+    let sipsCount = 0;
+    let jokerUsed = false;
+    let loopInterval = null;
+    let canvasLoop = null;
+    let ws = null;
+    let isHost = false;
+    const playerUuid = 'player_' + Math.random().toString(36).substring(2, 11);
+    let previousStatus = 'LOBBY';
+    
+    // Web Audio API voor luid alarm geluid
+    let audioCtx = null;
+    
+    let minSeconds = 5;
+    let maxSeconds = 10;
+    let testModeActive = false;
+    
+    const gamesList = [
+      'STATIC_RIDDLE', 'STATIC_ESTIMATION', 'STATIC_BOMB', 'STATIC_DRAW', 'STATIC_DILEMMA',
+      'DYNAMIC_ROULETTE', 'DYNAMIC_STACKER', 'DYNAMIC_BUMPERBAL', 'DYNAMIC_MAZE', 'DYNAMIC_CURVE',
+      'DYNAMIC_KLEURENCODE', 'DYNAMIC_BLIND_STEERING'
+    ];
+
+    const riddles = [
+      { q: "Wat heeft twee vleugels maar kan niet vliegen?", a: "windmolen" },
+      { q: "Ik ben zwart als je me koopt, rood als je me gebruikt en grijs als je me weggooit. Wat ben ik?", a: "houtskool" },
+      { q: "Hoe meer je er weghaalt, hoe groter het wordt. Wat is het?", a: "gat" },
+      { q: "Ik spreek zonder mond en hoor zonder oren. Wat ben ik?", a: "echo" },
+      { q: "Wat wordt natter hoe meer het droogt?", a: "handdoek" },
+      { q: "Het is van jou, maar je vrienden gebruiken het vaker dan jij. Wat is het?", a: "naam" },
+      { q: "Wat gaat omhoog maar komt nooit naar beneden?", a: "leeftijd" },
+      { q: "Wat heeft veel tanden maar kan niet bijten?", a: "kam" },
+      { q: "Wat kan je wel vasthouden in je linkerhand, maar absoluut niet in je rechterhand?", a: "rechterelleboog" },
+      { q: "Wat is zo licht als een veer, maar zelfs de sterkste man kan het niet lang vasthouden?", a: "adem" },
+      { q: "Als je me hebt, wil je me delen. Als je me deelt, heb je me niet meer. Wat ben ik?", a: "geheim" },
+      { q: "Hoe noem je een boer zonder tanden?", a: "kauwboy" },
+      { q: "Welk woord telt vijf letters, maar als je er twee weghaalt blijft er één over?", a: "alleen" },
+      { q: "Wat heeft een oog maar kan niks zien?", a: "naald" }
+    ];
+
+    const estimations = [
+      { q: "Hoeveel liter bier zit er in een standaard bierfust in Nederland?", a: 50, unit: "liter" },
+      { q: "Hoeveel procent van de Nederlanders (18+) drinkt weleens alcohol?", a: 79, unit: "%" },
+      { q: "Hoeveel meter hoog is de Eiffeltoren inclusief antenne?", a: 330, unit: "meter" },
+      { q: "In welk jaar werd de wereldberoemde bierbrouwerij Heineken opgericht?", a: 1864, unit: "jaar" },
+      { q: "Wat is het wereldrecord bierkratten stapelen (aantal kratten hoog)?", a: 45, unit: "kratten" },
+      { q: "Hoeveel glazen bier (vaasjes) gaan er gemiddeld uit één liter?", a: 4, unit: "glazen" },
+      { q: "Hoeveel kilo weegt een volgroeide mannetjesolifant gemiddeld?", a: 5000, unit: "kilo" },
+      { q: "In welk jaar zonk het legendarische schip de Titanic?", a: 1912, unit: "jaar" },
+      { q: "Hoeveel gram suiker zit er gemiddeld in een blikje gewone Cola (330ml)?", a: 35, unit: "gram" },
+      { q: "Hoeveel tanden en kiezen heeft een volwassen mens normaal gesproken?", a: 32, unit: "stuks" },
+      { q: "Hoeveel liter water verbruikt een gemiddelde Nederlander per dag?", a: 120, unit: "liter" }
+    ];
+
+    const dilemmas = [
+      { q: "Zou je liever altijd moeten rennen of overal naartoe huppelen?", o1: "🏃 Rennen", o2: "🦘 Huppelen" },
+      { q: "Zou je liever 10 jaar in de toekomst reizen of 10 jaar in het verleden?", o1: "🚀 Toekomst", o2: "⏳ Verleden" },
+      { q: "Zou je liever altijd met je vingers eten of altijd een helm op moeten?", o1: "🍕 Vingers", o2: "🪖 Helm" }
+    ];
+
+    // Geluidsfunctie voor sirene / alarm
+    function playAlarmSound() {
+      try {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        
+        let osc = audioCtx.createOscillator();
+        let gain = audioCtx.createGain();
+        
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(450, audioCtx.currentTime);
+        
+        // Modulatie voor een sirene/politie-effect
+        osc.frequency.linearRampToValueAtTime(850, audioCtx.currentTime + 0.35);
+        osc.frequency.linearRampToValueAtTime(450, audioCtx.currentTime + 0.7);
+        osc.frequency.linearRampToValueAtTime(850, audioCtx.currentTime + 1.05);
+        osc.frequency.linearRampToValueAtTime(450, audioCtx.currentTime + 1.4);
+        
+        gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.6);
+        
+        osc.start();
+        osc.stop(audioCtx.currentTime + 1.6);
+      } catch (err) {
+        console.log('Audio Context niet toegestaan door browser:', err);
+      }
+    }
+
+    function toggleTestMenu() {
+      const menu = document.getElementById('test-menu');
+      menu.style.display = menu.style.display === 'none' ? 'grid' : 'none';
+    }
+
+    function launchTestGame(gameName) {
+      testModeActive = true;
+      currentMode = 'demo';
+      document.getElementById('selection-screen').style.display = 'none';
+      document.getElementById('app-viewport').style.display = 'flex';
+      document.getElementById('player-label').innerText = 'Test Mode';
+      document.getElementById('extra-btn').innerText = 'Afsluiten';
+      
+      loadSpecificGame(gameName);
+    }
+
+    function launchApp(mode) {
+      testModeActive = false;
+      currentMode = mode;
+      document.getElementById('selection-screen').style.display = 'none';
+      document.getElementById('app-viewport').style.display = 'flex';
+
+      if (mode === 'demo') {
+        localPlayer = 'Sander (Demo)';
+        document.getElementById('player-label').innerText = localPlayer;
+        document.getElementById('extra-btn').innerText = 'Menu';
+        renderDemoLobby();
+      } else {
+        localPlayer = mode === 'sander' ? 'Sander' : 'Lisa';
+        document.getElementById('player-label').innerText = localPlayer;
+        document.getElementById('extra-btn').innerText = 'Menu';
+        connectWebSocket();
+      }
+    }
+
+    function triggerEmergency() {
+      resetTimers();
+      document.getElementById('app-viewport').style.display = 'none';
+      document.getElementById('selection-screen').style.display = 'flex';
+    }
+
+    // --- DEMO LOBBY VIEW ---
+    function renderDemoLobby() {
+      document.getElementById('game-title-banner').innerText = 'LOBBY';
+      document.getElementById('game-screen-area').innerHTML = `
+        <div class="lobby-config-panel">
+          <p style="text-align:center; margin-bottom: 10px; opacity:0.8;">Pas de timer aan en ervaar het spel direct.</p>
+          <div class="config-label">Minimale relax-tijd (sec):</div>
+          <input type="number" id="min-time" class="config-input" value="${minSeconds}">
+          
+          <div class="config-label">Maximale relax-tijd (sec):</div>
+          <input type="number" id="max-time" class="config-input" value="${maxSeconds}">
+
+          <button class="btn-game-option" onclick="startDemoLoop()" style="background: var(--primary);">START SPEL CYCLUS 🚀</button>
+        </div>
+      `;
+    }
+
+    function startDemoLoop() {
+      minSeconds = parseInt(document.getElementById('min-time').value) || 5;
+      maxSeconds = parseInt(document.getElementById('max-time').value) || 10;
+      runDemoIteration();
+    }
+
+    // --- LUNCHT DE SLUIMER / ZET TELEFOON OP TAFEL FUNCTIE ---
+    function runDemoIteration() {
+      resetTimers();
+      let countdown = Math.floor(Math.random() * (maxSeconds - minSeconds + 1)) + minSeconds;
+      
+      document.getElementById('game-title-banner').innerText = 'TELEFOON IN JE ZAK';
+      document.getElementById('game-screen-area').innerHTML = `
+        <div class="card-layout">
+          <div class="lock-icon">🔒</div>
+          <div class="card-title" style="color:var(--accent);">STAND-BY MODUS</div>
+          <div class="card-body" style="font-size:0.95rem; opacity:0.85;">
+            Leg je telefoon op tafel of stop hem in je zak. <br>
+            Er gaat elk moment <strong>onverwachts</strong> een melding af!
+          </div>
+          <div style="font-size: 0.8rem; color: rgba(255,255,255,0.3); margin-top:20px;">
+            (Simulatie: aftellen in achtergrond...)
+          </div>
+        </div>
+      `;
+
+      loopInterval = setInterval(() => {
+        countdown--;
+
+        if (countdown <= 0) {
+          clearInterval(loopInterval);
+          triggerNoodremAlert();
+        }
+      }, 1000);
+    }
+
+    // --- NOODREM ALARM MELDING EN SCHERM WAKKER WORDEN ---
+    function triggerNoodremAlert() {
+      // 1. Speel luid alarm en trillen
+      playAlarmSound();
+      if (navigator.vibrate) {
+        navigator.vibrate([400, 200, 400, 200, 600]);
+      }
+
+      // 2. Toon de flitsende Noodrem melding
+      document.getElementById('game-title-banner').innerText = '🚨 ALARM! 🚨';
+      
+      let reactCountdown = 20; // Ruime 20 seconden reactietijd
+      document.getElementById('game-screen-area').innerHTML = `
+        <div class="card-layout" style="background: rgba(239, 68, 68, 0.15); animation: flashRed 1s infinite alternate;">
+          <div class="card-title" style="color:var(--error); font-size:1.6rem; font-weight:900;">🚨 DE NOODREM 🚨</div>
+          <div class="card-body" style="font-weight:700;">
+            De noodrem is geactiveerd! Je hoeft niet snel te rennen, je krijgt 20 seconden om de knop in te drukken!
+          </div>
+          <div class="countdown-timer-circle" id="react-timer" style="border-color:var(--error); color:var(--error);">${reactCountdown}</div>
+          <button class="btn-game-option" onclick="acceptEmergency()" style="background: var(--error); border-color: #FFF; font-size:1.2rem; padding:18px;">
+            🛑 DRUK DE NOODREM IN!
+          </button>
+        </div>
+      `;
+
+      // CSS keyframe animatie voor rood flitsen dynamically toevoegen
+      if (!document.getElementById('style-flash')) {
+        let style = document.createElement('style');
+        style.id = 'style-flash';
+        style.innerHTML = `
+          @keyframes flashRed {
+            from { background: rgba(239, 68, 68, 0.05); }
+            to { background: rgba(239, 68, 68, 0.25); }
+          }
+        `;
+        document.head.appendChild(style);
+      }
+
+      loopInterval = setInterval(() => {
+        reactCountdown--;
+        const timer = document.getElementById('react-timer');
+        if (timer) timer.innerText = reactCountdown;
+
+        if (reactCountdown <= 0) {
+          clearInterval(loopInterval);
+          showGameResult(false, 'NOODREM GEMIST! 🚨', 'Oeps! Je reageerde niet binnen 20 seconden toen de Noodrem afging!', 4);
+        }
+      }, 1000);
+    }
+
+    function acceptEmergency() {
+      clearInterval(loopInterval);
+      
+      // Selecteer een game met gewichten (70% raadsels & schattingen, 30% actieve minigames)
+      const roll = Math.random();
+      let selectedGame = '';
+      if (roll < 0.35) {
+        selectedGame = 'STATIC_RIDDLE';
+      } else if (roll < 0.70) {
+        selectedGame = 'STATIC_ESTIMATION';
+      } else {
+        const activeMinigames = [
+          'STATIC_BOMB', 'STATIC_DRAW', 'STATIC_DILEMMA', 'DYNAMIC_ROULETTE',
+          'DYNAMIC_STACKER', 'DYNAMIC_BUMPERBAL', 'DYNAMIC_MAZE', 'DYNAMIC_CURVE',
+          'DYNAMIC_KLEURENCODE', 'DYNAMIC_BLIND_STEERING'
+        ];
+        selectedGame = activeMinigames[Math.floor(Math.random() * activeMinigames.length)];
+      }
+      loadSpecificGame(selectedGame);
+    }
+
+    function loadSpecificGame(gameName) {
+      document.getElementById('game-title-banner').innerText = gameName.replace(/_/g, ' ');
+
+      if (gameName === 'STATIC_RIDDLE') {
+        renderDemoRiddle();
+      } else if (gameName === 'STATIC_ESTIMATION') {
+        renderDemoEstimation();
+      } else if (gameName === 'STATIC_BOMB') {
+        renderDemoBomb();
+      } else if (gameName === 'STATIC_DRAW') {
+        renderDemoDraw();
+      } else if (gameName === 'STATIC_DILEMMA') {
+        renderDemoDilemma();
+      } else if (gameName === 'DYNAMIC_ROULETTE') {
+        renderDemoRoulette();
+      } else if (gameName === 'DYNAMIC_STACKER') {
+        renderDemoStacker();
+      } else if (gameName === 'DYNAMIC_BUMPERBAL') {
+        renderDemoBumperbal();
+      } else if (gameName === 'DYNAMIC_MAZE') {
+        renderDemoMaze();
+      } else if (gameName === 'DYNAMIC_CURVE') {
+        renderDemoCurve();
+      } else if (gameName === 'DYNAMIC_KLEURENCODE') {
+        renderDemoKleurencode();
+      } else if (gameName === 'DYNAMIC_BLIND_STEERING') {
+        renderDemoBlindSteering();
+      }
+    }
+
+    function showToast(message, isError = true) {
+      let toast = document.getElementById('game-toast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'game-toast';
+        toast.className = 'game-toast-notice';
+        document.body.appendChild(toast);
+      }
+      toast.innerText = message;
+      toast.style.background = isError ? 'rgba(239, 68, 68, 0.95)' : 'rgba(16, 185, 129, 0.95)';
+      toast.style.borderColor = isError ? '#ff7b7b' : '#a7f3d0';
+      toast.style.boxShadow = isError ? '0 10px 25px rgba(0,0,0,0.5), 0 0 15px var(--error)' : '0 10px 25px rgba(0,0,0,0.5), 0 0 15px var(--success)';
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2500);
+    }
+
+    function showGameResult(isWin, title, message, sips) {
+      resetTimers(); // Stop alle actieve lussen veilig
+      
+      const badgeClass = isWin ? 'win' : 'lose';
+      const cardClass = isWin ? 'win-card' : 'lose-card';
+      const badgeText = isWin ? '🏆 WINNAAR!' : '🍷 STRAF!';
+      const sipsText = sips > 0 ? `🍷 JIJ DRINKT ${sips} SLOKKEN!` : '🎉 DE ANDEREN DRINKEN!';
+      const emoji = isWin ? '🍻' : '🤢';
+      
+      document.getElementById('game-screen-area').innerHTML = `
+        <div class="result-overlay">
+          <div class="result-card ${cardClass}">
+            <div class="result-badge ${badgeClass}">${badgeText}</div>
+            <div class="sip-indicator">${emoji}</div>
+            <div class="result-title" style="color: ${isWin ? 'var(--success)' : 'var(--error)'}">${title}</div>
+            <div class="result-msg">${message}</div>
+            
+            <div style="font-size: 1.25rem; font-weight:900; color:var(--warning); margin-bottom: 22px; text-shadow: 0 0 12px rgba(245, 158, 11, 0.25);">
+              ${sipsText}
+            </div>
+            
+            <button class="btn-menu" style="max-width:200px; font-size:0.9rem; padding:12px 24px; margin: 10px 0 0 0; background: ${isWin ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)'}; border-color: ${isWin ? 'var(--success)' : 'var(--error)'};" onclick="finishActiveGame()">
+              DOORGAAN ➔
+            </button>
+          </div>
+        </div>
+      `;
+      
+      if (sips > 0) {
+        addSips(sips);
+      }
+    }
+
+    function finishActiveGame() {
+      if (testModeActive) {
+        triggerEmergency();
+      } else {
+        runDemoIteration();
+      }
+    }
+
+    // --- GAMES LOGICA ---
+
+    let currentRiddleIndex = 0;
+    function renderDemoRiddle() {
+      currentRiddleIndex = Math.floor(Math.random() * riddles.length);
+      const item = riddles[currentRiddleIndex];
+      
+      document.getElementById('game-screen-area').innerHTML = `
+        <div class="card-layout">
+          <div class="card-title">SOLO RAADSEL</div>
+          <div class="card-body">${item.q}</div>
+          <input type="text" id="riddle-input" class="config-input" placeholder="Je antwoord...">
+          <button class="btn-game-option" onclick="checkDemoRiddle()">Verstuur</button>
+        </div>
+      `;
+    }
+
+    function checkDemoRiddle() {
+      const ans = document.getElementById('riddle-input').value.toLowerCase().trim();
+      const target = riddles[currentRiddleIndex].a;
+      
+      if (ans.includes(target)) {
+        showGameResult(true, 'GEWELDIG GERADEN! 🎉', `Goed geraden! Het antwoord was inderdaad <strong>${target.toUpperCase()}</strong>. De rest van de groep drinkt 2 slokken!`, 0);
+      } else {
+        showGameResult(false, 'FOUT ANTWOORD! ❌', `Helaas! Het juiste antwoord was: <strong>${target.toUpperCase()}</strong>. Je drinkt zelf 3 slokken.`, 3);
+      }
+    }
+
+    let currentEstimationIndex = 0;
+    function renderDemoEstimation() {
+      currentEstimationIndex = Math.floor(Math.random() * estimations.length);
+      const item = estimations[currentEstimationIndex];
+      
+      document.getElementById('game-screen-area').innerHTML = `
+        <div class="card-layout">
+          <div class="card-title">⚖️ DICHTBIJ ZITTEN</div>
+          <div class="card-body" style="font-weight:700; font-size:1.1rem; color:var(--text); margin-bottom:15px;">
+            ${item.q}
+          </div>
+          
+          <div style="width:100%; display:flex; flex-direction:column; gap:12px; margin-bottom:20px;">
+            <div style="display:flex; flex-direction:column; align-items:flex-start;">
+              <label style="font-size:0.8rem; color:var(--accent); font-weight:800; margin-bottom:4px; text-transform:uppercase;">
+                🙋 Sander's gok:
+              </label>
+              <input type="number" id="est-input-1" class="config-input" placeholder="Type getal...">
+            </div>
+            <div style="display:flex; flex-direction:column; align-items:flex-start;">
+              <label style="font-size:0.8rem; color:#f472b6; font-weight:800; margin-bottom:4px; text-transform:uppercase;">
+                💁 Lisa's gok:
+              </label>
+              <input type="number" id="est-input-2" class="config-input" placeholder="Type getal...">
+            </div>
+          </div>
+          
+          <button class="btn-game-option" style="background:var(--primary); border-color:var(--accent);" onclick="checkDemoEstimation()">
+            VERGELIJK SCHATTINGEN 🔍
+          </button>
+        </div>
+      `;
+    }
+
+    function checkDemoEstimation() {
+      const val1 = parseFloat(document.getElementById('est-input-1').value);
+      const val2 = parseFloat(document.getElementById('est-input-2').value);
+      const item = estimations[currentEstimationIndex];
+      const target = item.a;
+
+      if (isNaN(val1) || isNaN(val2)) {
+        showToast('Vul alsjeblieft voor beide spelers een geldige gok in!');
+        return;
+      }
+
+      const diff1 = Math.abs(val1 - target);
+      const diff2 = Math.abs(val2 - target);
+
+      let msg = `Het juiste antwoord was: <strong>${target} ${item.unit}</strong>.<br><br>`;
+      msg += `Sander gokte: ${val1} (afwijking: ${diff1.toFixed(0)})<br>`;
+      msg += `Lisa gokte: ${val2} (afwijking: ${diff2.toFixed(0)})`;
+
+      if (diff1 === diff2) {
+        showGameResult(true, 'GELIJKSPEL! 🤝', msg + `<br><br>Beide spelers zaten er even dichtbij! Niemand hoeft te drinken.`, 0);
+      } else if (diff1 > diff2) {
+        showGameResult(false, 'LISA WINT! 👑', msg + `<br><br>Lisa zit er het dichtste bij! Sander was het verste weg en drinkt 3 slokken.`, 3);
+      } else {
+        showGameResult(true, 'SANDER WINT! 👑', msg + `<br><br>Sander zit er het dichtste bij! Lisa was het verste weg en drinkt 3 slokken.`, 3);
+      }
+    }
+
+    function renderDemoBlindSteering() {
+      document.getElementById('game-screen-area').innerHTML = `
+        <div style="display:flex; flex-direction:column; height:100%; width:100%; gap:10px;">
+          <!-- Navigator Section -->
+          <div style="background:rgba(18,10,36,0.8); border:2px solid var(--accent); border-radius:16px; padding:8px; display:flex; flex-direction:column;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <span style="font-size:0.75rem; color:var(--accent); font-weight:800; text-transform:uppercase;">🗺️ SPELER A (NAVIGATOR - ZIET LEVEL)</span>
+              <span id="blind-timer-text" style="font-size:0.85rem; color:var(--warning); font-weight:900;">20.0s</span>
+            </div>
+            <canvas id="blind-canvas" style="height:140px; background:#040209; border-radius:12px;"></canvas>
+            <div style="font-size:0.7rem; opacity:0.8; text-align:center; margin-top:4px; color:#a78bfa;">
+              Roep de stuuraanwijzingen door naar Speler B!
+            </div>
+          </div>
+          
+          <!-- Driver Section -->
+          <div style="flex:1; background:rgba(239,68,68,0.05); border:2px dashed var(--error); border-radius:16px; padding:8px; display:flex; flex-direction:column; justify-content:center;">
+            <div style="font-size:0.75rem; color:var(--error); font-weight:800; text-transform:uppercase; text-align:center; margin-bottom:6px;">
+              🎮 SPELER B (BESTUURDER - BLIND STUREN)
+            </div>
+            <div class="curve-btn-container" style="flex:1; display:flex; align-items:stretch;">
+              <button class="btn-curve" id="blind-left-btn" style="border-color:var(--error); background:rgba(239,68,68,0.1); height:100%;">◀ LINKS</button>
+              <button class="btn-curve" id="blind-right-btn" style="border-color:var(--error); background:rgba(239,68,68,0.1); height:100%;">RECHTS ▶</button>
+            </div>
+            <div style="font-size:0.7rem; opacity:0.8; text-align:center; margin-top:4px; color:#f472b6;">
+              Kijk niet naar boven! Luister puur naar Speler A!
+            </div>
+          </div>
+        </div>
+      `;
+
+      setTimeout(() => {
+        const canvas = document.getElementById('blind-canvas');
+        if (!canvas) return;
+        
+        canvas.width = canvas.clientWidth;
+        canvas.height = canvas.clientHeight || 140;
+        const ctx = canvas.getContext('2d');
+
+        let car = { x: canvas.width / 2, y: canvas.height - 20, w: 18, h: 10, color: '#06B6D4' };
+        let obstacles = [];
+        let surviveTime = 20.0;
+        let isSteeringLeft = false;
+        let isSteeringRight = false;
+        let frame = 0;
+        let speed = 2.4;
+
+        const leftBtn = document.getElementById('blind-left-btn');
+        const rightBtn = document.getElementById('blind-right-btn');
+
+        leftBtn.addEventListener('mousedown', () => isSteeringLeft = true);
+        leftBtn.addEventListener('mouseup', () => isSteeringLeft = false);
+        leftBtn.addEventListener('touchstart', (e) => { e.preventDefault(); isSteeringLeft = true; }, {passive:false});
+        leftBtn.addEventListener('touchend', (e) => { e.preventDefault(); isSteeringLeft = false; }, {passive:false});
+
+        rightBtn.addEventListener('mousedown', () => isSteeringRight = true);
+        rightBtn.addEventListener('mouseup', () => isSteeringRight = false);
+        rightBtn.addEventListener('touchstart', (e) => { e.preventDefault(); isSteeringRight = true; }, {passive:false});
+        rightBtn.addEventListener('touchend', (e) => { e.preventDefault(); isSteeringRight = false; }, {passive:false});
+
+        // Spawn first obstacles
+        obstacles.push({ x: Math.random() * (canvas.width - 45), y: -20, w: 40, h: 12 });
+
+        function draw() {
+          frame++;
+          surviveTime -= 1/60;
+          
+          // Snelheid loopt langzaam op van 2.4 tot 5.6 naarmate de tijd verstrijkt!
+          speed = 2.4 + (20.0 - surviveTime) * 0.16;
+          
+          if (surviveTime <= 0) {
+            cancelAnimationFrame(canvasLoop);
+            showGameResult(true, 'SNELWEG OVERLEEFD! 🛣️', 'Geweldig samengewerkt! Jullie hebben alle obstakels ontweken en de eindstreep gehaald! De rest drinkt 4 slokken.', 0);
+            return;
+          }
+
+          const timerText = document.getElementById('blind-timer-text');
+          if (timerText) timerText.innerText = surviveTime.toFixed(1) + 's';
+
+          // Move car
+          if (isSteeringLeft) car.x = Math.max(10, car.x - 3.2);
+          if (isSteeringRight) car.x = Math.min(canvas.width - 10 - car.w, car.x + 3.2);
+
+          // Generate obstacles
+          if (frame % 60 === 0) {
+            obstacles.push({
+              x: Math.random() * (canvas.width - 45),
+              y: -20,
+              w: 40 + Math.random() * 20,
+              h: 12
+            });
+          }
+
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+          // Draw scrolling road lanes
+          ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+          ctx.lineWidth = 2;
+          ctx.setLineDash([15, 15]);
+          ctx.beginPath();
+          ctx.moveTo(canvas.width / 3, 0); ctx.lineTo(canvas.width / 3, canvas.height);
+          ctx.moveTo((canvas.width / 3) * 2, 0); ctx.lineTo((canvas.width / 3) * 2, canvas.height);
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          // Move & Draw obstacles
+          ctx.fillStyle = 'var(--error)';
+          ctx.shadowBlur = 8;
+          ctx.shadowColor = 'var(--error)';
+          
+          for (let i = 0; i < obstacles.length; i++) {
+            let obs = obstacles[i];
+            obs.y += speed;
+
+            // Draw obstacle
+            ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
+
+            // AABB Collision check
+            if (car.x < obs.x + obs.w && car.x + car.w > obs.x &&
+                car.y < obs.y + obs.h && car.y + car.h > obs.y) {
+              cancelAnimationFrame(canvasLoop);
+              showGameResult(false, '💥 GECRASHT!', 'Oei! Jullie zijn tegen een neon-obstakel geknald! Jullie duo neemt 4 slokken.', 4);
+              return;
+            }
+          }
+
+          // Clean up off-screen obstacles
+          obstacles = obstacles.filter(obs => obs.y < canvas.height);
+
+          // Draw car
+          ctx.fillStyle = car.color;
+          ctx.shadowColor = car.color;
+          ctx.shadowBlur = 10;
+          ctx.fillRect(car.x, car.y, car.w, car.h);
+          
+          // Tiny sports car headlights
+          ctx.fillStyle = '#FFF';
+          ctx.shadowBlur = 0;
+          ctx.fillRect(car.x + 2, car.y, 3, 2);
+          ctx.fillRect(car.x + car.w - 5, car.y, 3, 2);
+
+          canvasLoop = requestAnimationFrame(draw);
+        }
+
+        draw();
+      }, 150);
+    }
+
+    function renderDemoBomb() {
+      let time = 10;
+      document.getElementById('game-screen-area').innerHTML = `
+        <div class="card-layout">
+          <div class="card-title">💣 TIJDBOM</div>
+          <div class="countdown-timer-circle" id="bomb-timer">${time}</div>
+          <div class="card-body">Typ snel een woord dat begint met de letter: <strong style="color:var(--accent); font-size:1.4rem;">T</strong></div>
+          <input type="text" id="bomb-input" class="config-input" placeholder="Typ...">
+          <button class="btn-game-option" onclick="submitDemoBomb()">Verzend</button>
+        </div>
+      `;
+
+      loopInterval = setInterval(() => {
+        time--;
+        const timer = document.getElementById('bomb-timer');
+        if (timer) {
+          timer.innerText = time;
+          if (time <= 3) {
+            timer.style.borderColor = 'var(--error)';
+            timer.style.color = 'var(--error)';
+          }
+        }
+        if (time <= 0) {
+          clearInterval(loopInterval);
+          showGameResult(false, 'BOM ONTPLOFT! 💥', 'De tijdbom tikte te lang door en ontplofte in je gezicht!', 4);
+        }
+      }, 1000);
+    }
+
+    function submitDemoBomb() {
+      const val = document.getElementById('bomb-input').value.toLowerCase().trim();
+      if (val.startsWith('t') && val.length > 1) {
+        clearInterval(loopInterval);
+        showGameResult(true, 'VEILIG! 💣', 'Je hebt de bom op het nippertje doorgeschoven naar de rest!', 0);
+      } else {
+        showToast('Moet beginnen met T en langer zijn dan 1 letter!');
+      }
+    }
+
+    const secretWords = ["Bier", "Fles", "Huis", "Hart", "Zon", "Boot", "Kat", "Vis", "Glas", "Bril"];
+    let selectedSecretWord = "";
+    
+    function renderDemoDraw() {
+      selectedSecretWord = secretWords[Math.floor(Math.random() * secretWords.length)];
+      
+      document.getElementById('game-screen-area').innerHTML = `
+        <div style="display:flex; flex-direction:column; height:100%; width:100%;">
+          <div style="text-align:center; font-weight:800; font-size:1.1rem; color:var(--warning); margin-bottom:8px;">
+            TEKEN DIT WOORD: <span style="color:#FFF; font-size:1.3rem; border-bottom:2px dashed var(--accent);">${selectedSecretWord.toUpperCase()}</span>
+          </div>
+          
+          <div class="draw-toolbar">
+            <div class="color-picker">
+              <div class="color-dot active" style="background:#06B6D4;" onclick="setDrawColor(this, '#06B6D4')"></div>
+              <div class="color-dot" style="background:#8B5CF6;" onclick="setDrawColor(this, '#8B5CF6')"></div>
+              <div class="color-dot" style="background:#EF4444;" onclick="setDrawColor(this, '#EF4444')"></div>
+              <div class="color-dot" style="background:#10B981;" onclick="setDrawColor(this, '#10B981')"></div>
+            </div>
+            
+            <div class="thickness-picker">
+              <button class="thickness-btn active" onclick="setDrawThickness(this, 3)">Dun</button>
+              <button class="thickness-btn" onclick="setDrawThickness(this, 7)">Middel</button>
+              <button class="thickness-btn" onclick="setDrawThickness(this, 12)">Dik</button>
+            </div>
+          </div>
+
+          <canvas id="draw-canvas" style="flex:1; touch-action: none;"></canvas>
+
+          <div style="margin-top:10px; width:100%;">
+            <input type="text" id="guess-input" class="config-input" placeholder="Laat speler 2 hier raden...">
+            <div style="display:flex; width:100%; gap: 10px; margin-top:8px;">
+              <button class="btn-game-option" onclick="clearCanvas()" style="background:var(--surface); border-color:var(--error); flex:1; margin:0;">Wis</button>
+              <button class="btn-game-option" onclick="checkDemoDraw()" style="background:var(--primary); flex:1; margin:0;">Raad</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      setTimeout(() => {
+        const canvas = document.getElementById('draw-canvas');
+        if (!canvas) return;
+        
+        canvas.width = canvas.clientWidth;
+        canvas.height = canvas.clientHeight || 200;
+
+        const ctx = canvas.getContext('2d');
+        ctx.strokeStyle = '#06B6D4';
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        let drawing = false;
+
+        window.drawColor = '#06B6D4';
+        window.drawThickness = 3;
+
+        window.setDrawColor = function(dot, color) {
+          document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+          dot.classList.add('active');
+          window.drawColor = color;
+        };
+
+        window.setDrawThickness = function(btn, size) {
+          document.querySelectorAll('.thickness-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          window.drawThickness = size;
+        };
+
+        window.clearCanvas = function() {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        };
+
+        function startDrawing(e) {
+          drawing = true;
+          ctx.beginPath();
+          ctx.strokeStyle = window.drawColor;
+          ctx.lineWidth = window.drawThickness;
+          const pos = getPos(e);
+          ctx.moveTo(pos.x, pos.y);
+        }
+
+        function draw(e) {
+          if (!drawing) return;
+          e.preventDefault();
+          const pos = getPos(e);
+          ctx.lineTo(pos.x, pos.y);
+          ctx.stroke();
+        }
+
+        function stopDrawing() {
+          drawing = false;
+        }
+
+        function getPos(e) {
+          const rect = canvas.getBoundingClientRect();
+          const clientX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+          const clientY = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+          return {
+            x: clientX - rect.left,
+            y: clientY - rect.top
+          };
+        }
+
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+
+        canvas.addEventListener('touchstart', (e) => { startDrawing(e); }, { passive: false });
+        canvas.addEventListener('touchmove', (e) => { draw(e); }, { passive: false });
+        canvas.addEventListener('touchend', stopDrawing);
+      }, 150);
+    }
+
+    function checkDemoDraw() {
+      const val = document.getElementById('guess-input').value.toLowerCase().trim();
+      const target = selectedSecretWord.toLowerCase();
+      
+      if (val === target) {
+        showGameResult(true, 'WOORD GERADEN! 🎨', 'Speler 2 heeft het woord "' + selectedSecretWord.toUpperCase() + '" geraden! Beiden zijn veilig.', 0);
+      } else {
+        showGameResult(false, 'NIET GERADEN! ❌', 'Helaas! Speler 2 kon het niet raden. Het woord was: <strong>' + selectedSecretWord.toUpperCase() + '</strong>. De tekenaar drinkt 3 slokken.', 3);
+      }
+    }
+
+    let currentDilemmaIndex = 0;
+    function renderDemoDilemma() {
+      currentDilemmaIndex = Math.floor(Math.random() * dilemmas.length);
+      const item = dilemmas[currentDilemmaIndex];
+      
+      document.getElementById('game-screen-area').innerHTML = `
+        <div class="card-layout">
+          <div class="card-title">DILEMMA STEMMING</div>
+          <div class="card-body" style="font-weight:600;">${item.q}</div>
+          <button class="btn-game-option" onclick="voteDemoDilemma('o1')">${item.o1}</button>
+          <button class="btn-game-option" onclick="voteDemoDilemma('o2')">${item.o2}</button>
+        </div>
+      `;
+    }
+
+    function voteDemoDilemma(vote) {
+      showGameResult(true, 'STEM UITGEBRACHT! 🗳️', 'Mooie keuze! Je stemde met de meerderheid mee. Je bent veilig!', 0);
+    }
+
+    function renderDemoRoulette() {
+      document.getElementById('game-screen-area').innerHTML = `
+        <div class="touch-surface">
+          <div class="btn-big-target" id="roulette-target">
+            <span id="roulette-status-text">Houd In</span>
+          </div>
+        </div>
+      `;
+
+      const target = document.getElementById('roulette-target');
+      
+      function press(e) {
+        if (e) e.preventDefault();
+        pressTarget();
+      }
+
+      function release(e) {
+        if (e) e.preventDefault();
+        releaseTarget();
+      }
+
+      target.addEventListener('mousedown', press);
+      target.addEventListener('mouseup', release);
+      target.addEventListener('touchstart', press, { passive: false });
+      target.addEventListener('touchend', release, { passive: false });
+    }
+
+    let isPressingRoulette = false;
+    let rouletteTimer1 = null;
+    let rouletteTimer2 = null;
+    let isFakeAlert = false;
+    
+    function pressTarget() {
+      isPressingRoulette = true;
+      isFakeAlert = false;
+      const target = document.getElementById('roulette-target');
+      if (target) target.classList.add('pressed');
+      
+      const txt = document.getElementById('roulette-status-text');
+      if (txt) txt.innerText = 'Wacht op signaal...';
+
+      const triggerFake = Math.random() < 0.5;
+      
+      if (triggerFake) {
+        rouletteTimer1 = setTimeout(() => {
+          if (isPressingRoulette) {
+            isFakeAlert = true;
+            const txt = document.getElementById('roulette-status-text');
+            if (txt) txt.innerText = 'LAAT LO... WACHT!';
+            const target = document.getElementById('roulette-target');
+            if (target) target.style.borderColor = 'var(--warning)';
+          }
+        }, 1800);
+
+        rouletteTimer2 = setTimeout(() => {
+          if (isPressingRoulette) {
+            isFakeAlert = false;
+            const txt = document.getElementById('roulette-status-text');
+            if (txt) txt.innerText = 'LAAT NU LOS!!!';
+            const target = document.getElementById('roulette-target');
+            if (target) target.style.borderColor = 'var(--error)';
+          }
+        }, 4000);
+      } else {
+        rouletteTimer1 = setTimeout(() => {
+          if (isPressingRoulette) {
+            const txt = document.getElementById('roulette-status-text');
+            if (txt) txt.innerText = 'LAAT NU LOS!!!';
+            const target = document.getElementById('roulette-target');
+            if (target) target.style.borderColor = 'var(--error)';
+          }
+        }, 2500);
+      }
+    }
+
+    function releaseTarget() {
+      isPressingRoulette = false;
+      const target = document.getElementById('roulette-target');
+      if (target) target.classList.remove('pressed');
+      
+      clearTimeout(rouletteTimer1);
+      clearTimeout(rouletteTimer2);
+
+      const txt = document.getElementById('roulette-status-text');
+      if (txt) {
+        const statusText = txt.innerText;
+        if (statusText === 'LAAT NU LOS!!!') {
+          showGameResult(true, 'PERFECTE TIMING! ⏱️', 'Geweldig gedaan! Je liet precies op tijd los toen de bom op scherp stond.', 0);
+        } else if (isFakeAlert) {
+          showGameResult(false, 'NEP ALARM! 🤡', 'Oei! Je bent erin getrapt! Dat was een vals signaal en je liet los. Drink 5 slokken!', 5);
+        } else {
+          showGameResult(false, 'TE VROEG LOSGELATEN! ⚠️', 'Je liet te vroeg los voordat de countdown of het signaal klonk. Drink 5 slokken!', 5);
+        }
+      }
+      finishActiveGame();
+    }
+
+    function renderDemoStacker() {
+      document.getElementById('game-screen-area').innerHTML = `<canvas id="canvas-stacker"></canvas>`;
+      setTimeout(() => {
+        const canvas = document.getElementById('canvas-stacker');
+        if (!canvas) return;
+        
+        canvas.width = canvas.clientWidth;
+        canvas.height = canvas.clientHeight || 280;
+        const ctx = canvas.getContext('2d');
+        
+        let blocks = [{ x: canvas.width / 4, y: canvas.height - 30, w: canvas.width / 2 }];
+        let active = { x: 0, y: canvas.height - 60, w: canvas.width / 2, speed: 4 };
+
+        function handleTap(e) {
+          e.preventDefault();
+          const last = blocks[blocks.length - 1];
+          
+          const newX = Math.max(active.x, last.x);
+          const endX = Math.min(active.x + active.w, last.x + last.w);
+          const newW = endX - newX;
+          
+          if (newW <= 0) {
+            cancelAnimationFrame(canvasLoop);
+            showGameResult(false, 'TOREN INGESTORT! 🧱', 'Oeps! De blokken vielen om en je toren stortte volledig in. Drink 3 slokken.', 3);
+            return;
+          }
+          
+          blocks.push({ x: newX, y: active.y, w: newW });
+          
+          active = { 
+            x: 0, 
+            y: active.y - 20, 
+            w: newW, 
+            speed: (active.speed > 0 ? 1 : -1) * (Math.abs(active.speed) + 0.8) 
+          };
+        }
+
+        canvas.addEventListener('mousedown', handleTap);
+        canvas.addEventListener('touchstart', handleTap, { passive: false });
+
+        function draw() {
+          ctx.clearRect(0,0,canvas.width,canvas.height);
+          
+          ctx.fillStyle = '#8B5CF6';
+          blocks.forEach(b => ctx.fillRect(b.x, b.y, b.w, 18));
+          
+          active.x += active.speed;
+          if (active.x + active.w > canvas.width || active.x < 0) {
+            active.speed = -active.speed;
+          }
+          
+          ctx.fillStyle = '#06B6D4';
+          ctx.fillRect(active.x, active.y, active.w, 18);
+          
+          canvasLoop = requestAnimationFrame(draw);
+        }
+        draw();
+      }, 150);
+    }
+
+    function renderDemoBumperbal() {
+      document.getElementById('game-screen-area').innerHTML = `<canvas id="canvas-bumper"></canvas>`;
+      setTimeout(() => {
+        const canvas = document.getElementById('canvas-bumper');
+        canvas.width = canvas.clientWidth;
+        canvas.height = canvas.clientHeight || 280;
+        const ctx = canvas.getContext('2d');
+        
+        let p1 = { x: canvas.width / 2, y: canvas.height - 40, r: 20 };
+        let ball = { x: canvas.width / 2, y: canvas.height / 3, vx: 3, vy: 3, r: 12 };
+
+        function updatePlayerPos(e) {
+          e.preventDefault();
+          const rect = canvas.getBoundingClientRect();
+          const clientX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : p1.x);
+          const clientY = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : p1.y);
+          p1.x = Math.max(p1.r, Math.min(canvas.width - p1.r, clientX - rect.left));
+          p1.y = Math.max(p1.r, Math.min(canvas.height - p1.r, clientY - rect.top));
+        }
+
+        canvas.addEventListener('mousemove', updatePlayerPos);
+        canvas.addEventListener('touchmove', updatePlayerPos, { passive: false });
+
+        function draw() {
+          ctx.clearRect(0,0,canvas.width,canvas.height);
+          ball.x += ball.vx; ball.y += ball.vy;
+          
+          if (ball.x - ball.r < 0 || ball.x + ball.r > canvas.width) ball.vx *= -1;
+          if (ball.y - ball.r < 0) ball.vy *= -1;
+          
+          if (ball.y + ball.r > canvas.height) {
+            cancelAnimationFrame(canvasLoop);
+            showGameResult(false, 'GOAL GEMIST! ⚽', 'Ai! Je kon de bumperbal niet keren en liet een goal door. Drink 4 slokken!', 4);
+            return;
+          }
+
+          let dist = Math.hypot(ball.x - p1.x, ball.y - p1.y);
+          if (dist < ball.r + p1.r) {
+            ball.vy = -Math.abs(ball.vy);
+            ball.vx = (ball.x - p1.x) * 0.3;
+          }
+
+          ctx.fillStyle = '#8B5CF6';
+          ctx.beginPath(); ctx.arc(p1.x, p1.y, p1.r, 0, Math.PI*2); ctx.fill();
+
+          ctx.fillStyle = '#EF4444';
+          ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI*2); ctx.fill();
+          
+          canvasLoop = requestAnimationFrame(draw);
+        }
+        draw();
+      }, 150);
+    }
+
+    function renderDemoMaze() {
+      document.getElementById('game-screen-area').innerHTML = `<canvas id="canvas-maze"></canvas>`;
+      setTimeout(() => {
+        const canvas = document.getElementById('canvas-maze');
+        canvas.width = canvas.clientWidth;
+        canvas.height = canvas.clientHeight || 280;
+        const ctx = canvas.getContext('2d');
+        
+        let ball = { x: canvas.width / 2, y: canvas.height - 30, vx: 0, vy: 0, r: 8 };
+        let hole = { x: canvas.width / 2, y: 30, r: 12 };
+        
+        let obstacle1 = { x: 0, y: canvas.height * 0.32, w: canvas.width * 0.68, h: 14 };
+        let obstacle2 = { x: canvas.width * 0.32, y: canvas.height * 0.68, w: canvas.width * 0.68, h: 14 };
+        
+        let movingBar = { 
+          x: 20, 
+          y: canvas.height * 0.5 - 6, 
+          w: 65, 
+          h: 12, 
+          speed: 1.8, 
+          rangeMin: 15, 
+          rangeMax: canvas.width - 80 
+        };
+
+        let lavaHazard = { x: canvas.width / 2, y: canvas.height * 0.5, r: 24 };
+        
+        let strokes = 0;
+        let isAiming = false;
+        let dragStart = { x: 0, y: 0 };
+        let dragCurrent = { x: 0, y: 0 };
+
+        function getMousePos(e) {
+          const rect = canvas.getBoundingClientRect();
+          const clientX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+          const clientY = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+          return {
+            x: clientX - rect.left,
+            y: clientY - rect.top
+          };
+        }
+
+        function startShot(e) {
+          if (Math.abs(ball.vx) > 0.15 || Math.abs(ball.vy) > 0.15) return;
+          const pos = getMousePos(e);
+          
+          let dist = Math.hypot(pos.x - ball.x, pos.y - ball.y);
+          if (dist < 40) {
+            isAiming = true;
+            dragStart = { x: ball.x, y: ball.y };
+            dragCurrent = pos;
+          }
+        }
+
+        function aimShot(e) {
+          if (!isAiming) return;
+          e.preventDefault();
+          dragCurrent = getMousePos(e);
+        }
+
+        function releaseShot(e) {
+          if (!isAiming) return;
+          isAiming = false;
+          
+          let dx = dragStart.x - dragCurrent.x;
+          let dy = dragStart.y - dy;
+          
+          ball.vx = dx * 0.16;
+          ball.vy = dy * 0.16;
+          
+          strokes++;
+        }
+
+        canvas.addEventListener('mousedown', startShot);
+        canvas.addEventListener('mousemove', aimShot);
+        canvas.addEventListener('mouseup', releaseShot);
+
+        canvas.addEventListener('touchstart', (e) => { startShot(e); }, { passive: false });
+        canvas.addEventListener('touchmove', (e) => { aimShot(e); }, { passive: false });
+        canvas.addEventListener('touchend', releaseShot);
+
+        function draw() {
+          ctx.clearRect(0,0,canvas.width,canvas.height);
+          
+          movingBar.x += movingBar.speed;
+          if (movingBar.x > movingBar.rangeMax || movingBar.x < movingBar.rangeMin) {
+            movingBar.speed = -movingBar.speed;
+          }
+
+          ball.x += ball.vx;
+          ball.y += ball.vy;
+          ball.vx *= 0.98;
+          ball.vy *= 0.98;
+
+          if (Math.hypot(ball.vx, ball.vy) < 0.15) {
+            ball.vx = 0;
+            ball.vy = 0;
+          }
+
+          if (ball.x - ball.r < 0 || ball.x + ball.r > canvas.width) {
+            ball.vx *= -1;
+            ball.x = ball.x - ball.r < 0 ? ball.r : canvas.width - ball.r;
+          }
+          if (ball.y - ball.r < 0 || ball.y + ball.r > canvas.height) {
+            ball.vy *= -1;
+            ball.y = ball.y - ball.r < 0 ? ball.r : canvas.height - ball.r;
+          }
+
+          if (ball.x + ball.r > obstacle1.x && ball.x - ball.r < obstacle1.x + obstacle1.w &&
+              ball.y + ball.r > obstacle1.y && ball.y - ball.r < obstacle1.y + obstacle1.h) {
+            if (ball.y < obstacle1.y || ball.y > obstacle1.y + obstacle1.h) {
+              ball.vy *= -1;
+              ball.y = ball.y < obstacle1.y ? obstacle1.y - ball.r : obstacle1.y + obstacle1.h + ball.r;
+            } else {
+              ball.vx *= -1;
+              ball.x = obstacle1.x + obstacle1.w + ball.r;
+            }
+          }
+
+          if (ball.x + ball.r > obstacle2.x && ball.x - ball.r < obstacle2.x + obstacle2.w &&
+              ball.y + ball.r > obstacle2.y && ball.y - ball.r < obstacle2.y + obstacle2.h) {
+            if (ball.y < obstacle2.y || ball.y > obstacle2.y + obstacle2.h) {
+              ball.vy *= -1;
+              ball.y = ball.y < obstacle2.y ? obstacle2.y - ball.r : obstacle2.y + obstacle2.h + ball.r;
+            } else {
+              ball.vx *= -1;
+              ball.x = obstacle2.x - ball.r;
+            }
+          }
+
+          if (ball.x + ball.r > movingBar.x && ball.x - ball.r < movingBar.x + movingBar.w &&
+              ball.y + ball.r > movingBar.y && ball.y - ball.r < movingBar.y + movingBar.h) {
+            ball.vy *= -1;
+            ball.y = ball.y < movingBar.y ? movingBar.y - ball.r : movingBar.y + movingBar.h + ball.r;
+          }
+
+          let distToLava = Math.hypot(ball.x - lavaHazard.x, ball.y - lavaHazard.y);
+          if (distToLava < ball.r + lavaHazard.r) {
+            showToast('🔥 IN DE LAVA GEROLD! Terug naar de start!');
+            ball.x = canvas.width / 2;
+            ball.y = canvas.height - 30;
+            ball.vx = 0;
+            ball.vy = 0;
+          }
+
+          ctx.shadowBlur = 15;
+          ctx.shadowColor = '#EF4444';
+          ctx.fillStyle = 'rgba(239, 68, 68, 0.3)';
+          ctx.strokeStyle = '#EF4444';
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.arc(lavaHazard.x, lavaHazard.y, lavaHazard.r, 0, Math.PI*2);
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.shadowColor = '#FF5722';
+          ctx.fillStyle = 'rgba(255, 87, 34, 0.2)';
+          ctx.strokeStyle = '#FF5722';
+          ctx.fillRect(obstacle1.x, obstacle1.y, obstacle1.w, obstacle1.h);
+          ctx.strokeRect(obstacle1.x, obstacle1.y, obstacle1.w, obstacle1.h);
+          ctx.fillRect(obstacle2.x, obstacle2.y, obstacle2.w, obstacle2.h);
+          ctx.strokeRect(obstacle2.x, obstacle2.y, obstacle2.w, obstacle2.h);
+
+          ctx.shadowColor = '#06B6D4';
+          ctx.fillStyle = 'rgba(6, 182, 212, 0.2)';
+          ctx.strokeStyle = '#06B6D4';
+          ctx.fillRect(movingBar.x, movingBar.y, movingBar.w, movingBar.h);
+          ctx.strokeRect(movingBar.x, movingBar.y, movingBar.w, movingBar.h);
+
+          ctx.shadowBlur = 0;
+
+          ctx.fillStyle = '#000000';
+          ctx.beginPath();
+          ctx.arc(hole.x, hole.y, hole.r, 0, Math.PI*2);
+          ctx.fill();
+          ctx.strokeStyle = 'var(--primary)';
+          ctx.lineWidth = 3;
+          ctx.stroke();
+
+          if (isAiming) {
+            ctx.strokeStyle = 'var(--warning)';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(ball.x, ball.y);
+            let targetX = ball.x + (dragStart.x - dragCurrent.x);
+            let targetY = ball.y + (dragStart.y - dragCurrent.y);
+            ctx.lineTo(targetX, targetY);
+            ctx.stroke();
+
+            ctx.fillStyle = 'var(--warning)';
+            ctx.beginPath();
+            ctx.arc(targetX, targetY, 4, 0, Math.PI*2);
+            ctx.fill();
+          }
+
+          ctx.fillStyle = '#FFFFFF';
+          ctx.beginPath();
+          ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI*2);
+          ctx.fill();
+
+          let dist = Math.hypot(ball.x - hole.x, ball.y - hole.y);
+          if (dist < hole.r && Math.hypot(ball.vx, ball.vy) < 3.0) {
+            cancelAnimationFrame(canvasLoop);
+            showGameResult(true, 'GEPOT! ⛳', 'Geweldig gespeeld! Je hebt de midgetgolf-bal gepot in slechts <strong>' + strokes + '</strong> slagen! De rest drinkt.', 0);
+            return;
+          }
+
+          ctx.fillStyle = 'rgba(255,255,255,0.7)';
+          ctx.font = '800 14px Outfit';
+          ctx.fillText('SLAGEN: ' + strokes, 15, canvas.height - 15);
+
+          canvasLoop = requestAnimationFrame(draw);
+        }
+        draw();
+      }, 150);
+    }
+
+    function renderDemoCurve() {
+      canJumpCurve = true;
+      document.getElementById('game-screen-area').innerHTML = `
+        <div style="display:flex; flex-direction:column; height:100%; width:100%;">
+          <canvas id="canvas-curve" style="flex:1;"></canvas>
+          <div class="curve-btn-container">
+            <button class="btn-curve" id="curve-left-btn">◀ LINKS</button>
+            <button class="btn-curve" id="curve-jump-btn" style="background:#F59E0B; border-color:#F59E0B;">JUMP</button>
+            <button class="btn-curve" id="curve-right-btn">RECHTS ▶</button>
+          </div>
+        </div>
+      `;
+
+      setTimeout(() => {
+        const canvas = document.getElementById('canvas-curve');
+        canvas.width = canvas.clientWidth;
+        canvas.height = canvas.clientHeight || 240;
+        const ctx = canvas.getContext('2d');
+        
+        let x = canvas.width / 2;
+        let y = canvas.height / 2;
+        let angle = -Math.PI / 2;
+        let speed = 2.0;
+        
+        let trail = [];
+        let isSteeringLeft = false;
+        let isSteeringRight = false;
+        
+        let jumpFrames = 0;
+        let autoGapFrames = 0;
+        let frameCounter = 0;
+
+        const leftBtn = document.getElementById('curve-left-btn');
+        const rightBtn = document.getElementById('curve-right-btn');
+        const jumpBtn = document.getElementById('curve-jump-btn');
+
+        leftBtn.addEventListener('mousedown', () => isSteeringLeft = true);
+        leftBtn.addEventListener('mouseup', () => isSteeringLeft = false);
+        leftBtn.addEventListener('touchstart', (e) => { e.preventDefault(); isSteeringLeft = true; });
+        leftBtn.addEventListener('touchend', (e) => { e.preventDefault(); isSteeringLeft = false; });
+
+        rightBtn.addEventListener('mousedown', () => isSteeringRight = true);
+        rightBtn.addEventListener('mouseup', () => isSteeringRight = false);
+        rightBtn.addEventListener('touchstart', (e) => { e.preventDefault(); isSteeringRight = true; });
+        rightBtn.addEventListener('touchend', (e) => { e.preventDefault(); isSteeringRight = false; });
+
+        jumpBtn.addEventListener('click', triggerCurveJump);
+        jumpBtn.addEventListener('touchstart', (e) => { e.preventDefault(); triggerCurveJump(); });
+
+        function draw() {
+          frameCounter++;
+          
+          if (isSteeringLeft) angle -= 0.07;
+          if (isSteeringRight) angle += 0.07;
+
+          x += Math.cos(angle) * speed;
+          y += Math.sin(angle) * speed;
+
+          if (x < 3 || x > canvas.width - 3 || y < 3 || y > canvas.height - 3) {
+            cancelAnimationFrame(canvasLoop);
+            showGameResult(false, 'TEGEN DE MUUR! 💥', 'Oei! Je stuurde direct tegen de neon-buitenmuur aan. Neem 3 slokken!', 3);
+            return;
+          }
+
+          if (frameCounter % 140 === 0) {
+            autoGapFrames = 12;
+          }
+
+          const inGap = (jumpFrames > 0 || autoGapFrames > 0);
+          
+          if (jumpFrames > 0) jumpFrames--;
+          if (autoGapFrames > 0) autoGapFrames--;
+
+          if (!inGap) {
+            for (let i = 0; i < trail.length - 18; i++) {
+              let dist = Math.hypot(x - trail[i].x, y - trail[i].y);
+              if (dist < 4) {
+                cancelAnimationFrame(canvasLoop);
+                showGameResult(false, 'GECRASHT! 🌀', 'Oei! Je raakte je eigen of andermans spoor. Neem 3 slokken!', 3);
+                return;
+              }
+            }
+            trail.push({ x: x, y: y });
+          }
+
+          ctx.clearRect(0,0,canvas.width,canvas.height);
+          
+          ctx.strokeStyle = 'var(--primary)';
+          ctx.lineWidth = 4;
+          ctx.strokeRect(0, 0, canvas.width, canvas.height);
+
+          ctx.fillStyle = '#06B6D4';
+          for (let i = 0; i < trail.length; i++) {
+            ctx.beginPath();
+            ctx.arc(trail[i].x, trail[i].y, 3, 0, Math.PI*2);
+            ctx.fill();
+          }
+
+          if (!inGap || frameCounter % 4 < 2) {
+            ctx.fillStyle = inGap ? '#F59E0B' : '#FFF';
+            ctx.beginPath();
+            ctx.arc(x, y, 5, 0, Math.PI*2);
+            ctx.fill();
+          }
+
+          canvasLoop = requestAnimationFrame(draw);
+        }
+        draw();
+      }, 150);
+    }
+
+    function renderDemoWaterpas() {
+      document.getElementById('game-screen-area').innerHTML = `<canvas id="canvas-waterpas"></canvas>`;
+      setTimeout(() => {
+        const canvas = document.getElementById('canvas-waterpas');
+        canvas.width = canvas.clientWidth;
+        canvas.height = canvas.clientHeight || 280;
+        const ctx = canvas.getContext('2d');
+        
+        let cx = canvas.width / 2;
+        let cy = canvas.height / 2;
+        
+        let ringRadius = 75;
+        let minRingRadius = 75;
+        
+        let bx = cx;
+        let by = cy;
+        let br = 12;
+        
+        let duration = 0;
+        let tremorForce = 0.45;
+        
+        let beta = 0;
+        let gamma = 0;
+        
+        function handleOrientation(event) {
+          beta = event.beta || 0;
+          gamma = event.gamma || 0;
+        }
+        
+        window.addEventListener('deviceorientation', handleOrientation);
+
+        let isTouching = false;
+        let touchPos = { x: cx, y: cy };
+        
+        function updateTouch(e) {
+          const rect = canvas.getBoundingClientRect();
+          const clientX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : cx);
+          const clientY = e.clientY || (e.touches && e.touches[0] ? e.touches[0].clientY : cy);
+          touchPos.x = clientX - rect.left;
+          touchPos.y = clientY - rect.top;
+        }
+
+        canvas.addEventListener('mousedown', (e) => { isTouching = true; updateTouch(e); });
+        canvas.addEventListener('mousemove', (e) => { if (isTouching) updateTouch(e); });
+        canvas.addEventListener('mouseup', () => { isTouching = false; });
+        canvas.addEventListener('touchstart', (e) => { isTouching = true; updateTouch(e); }, { passive: false });
+        canvas.addEventListener('touchmove', (e) => { if (isTouching) updateTouch(e); }, { passive: false });
+        canvas.addEventListener('touchend', () => { isTouching = false; });
+
+        function draw() {
+          duration += 1/60;
+          
+          ringRadius = Math.max(25, minRingRadius - duration * 1.5);
+          tremorForce = 0.45 + duration * 0.12;
+
+          let driftX = (Math.random() - 0.5) * tremorForce * 8;
+          let driftY = (Math.random() - 0.5) * tremorForce * 8;
+          
+          bx += driftX;
+          by += driftY;
+
+          if (Math.abs(beta) > 1 || Math.abs(gamma) > 1) {
+            bx += gamma * 0.28;
+            by += (beta - 45) * 0.28;
+          }
+
+          if (isTouching) {
+            bx += (touchPos.x - bx) * 0.08;
+            by += (touchPos.y - by) * 0.08;
+          }
+
+          ctx.clearRect(0,0,canvas.width,canvas.height);
+
+          ctx.strokeStyle = 'rgba(239, 68, 68, 0.2)';
+          ctx.lineWidth = 10;
+          ctx.beginPath();
+          ctx.arc(cx, cy, ringRadius + 10, 0, Math.PI*2);
+          ctx.stroke();
+
+          ctx.strokeStyle = 'var(--accent)';
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.arc(cx, cy, ringRadius, 0, Math.PI*2);
+          ctx.stroke();
+
+          ctx.fillStyle = 'rgba(6, 182, 212, 0.1)';
+          ctx.beginPath();
+          ctx.arc(cx, cy, 15, 0, Math.PI*2);
+          ctx.fill();
+
+          let distFromCenter = Math.hypot(bx - cx, by - cy);
+          
+          ctx.fillStyle = distFromCenter > ringRadius ? 'var(--error)' : 'var(--success)';
+          ctx.beginPath();
+          ctx.arc(bx, by, br, 0, Math.PI*2);
+          ctx.fill();
+          
+          if (distFromCenter > ringRadius - 10) {
+            canvas.style.transform = `translate(${(Math.random()-0.5)*6}px, ${(Math.random()-0.5)*6}px)`;
+          } else {
+            canvas.style.transform = `none`;
+          }
+
+          if (distFromCenter > ringRadius) {
+            window.removeEventListener('deviceorientation', handleOrientation);
+            canvas.style.transform = `none`;
+            cancelAnimationFrame(canvasLoop);
+            showGameResult(false, 'BELLETJE ONTSNAPT! 🧪', 'Je hand trilde te hard en het belletje vloog buiten de ring! Drink 3 slokken.', 3);
+            return;
+          }
+
+          ctx.fillStyle = '#FFFFFF';
+          ctx.font = '800 16px Outfit';
+          ctx.fillText('TIJD STAND: ' + duration.toFixed(1) + 's', 15, canvas.height - 15);
+
+          canvasLoop = requestAnimationFrame(draw);
+        }
+        draw();
+      }, 150);
+    }
+
+    let simonSequence = [];
+    let playerSequence = [];
+    let isSimonActive = false;
+    let simonRound = 1;
+
+    function renderDemoKleurencode() {
+      simonSequence = [];
+      playerSequence = [];
+      simonRound = 1;
+      
+      document.getElementById('game-screen-area').innerHTML = `
+        <div class="card-layout">
+          <div id="simon-info" style="font-weight:800; color:var(--warning); font-size:1.1rem; margin-bottom:10px;">
+            RONDE ${simonRound}: ONTHOUD DE REEKS
+          </div>
+          
+          <div class="simon-grid">
+            <div class="simon-pad" id="pad-0" style="background:#EF4444;" onclick="handleSimonTap(0)"></div>
+            <div class="simon-pad" id="pad-1" style="background:#06B6D4;" onclick="handleSimonTap(1)"></div>
+            <div class="simon-pad" id="pad-2" style="background:#10B981;" onclick="handleSimonTap(2)"></div>
+            <div class="simon-pad" id="pad-3" style="background:#F59E0B;" onclick="handleSimonTap(3)"></div>
+          </div>
+          
+          <div style="font-size:0.9rem; opacity:0.7;">Blijf scherp en speel de reeks na.</div>
+        </div>
+      `;
+
+      setTimeout(() => {
+        startNextSimonRound();
+      }, 1000);
+    }
+
+    function startNextSimonRound() {
+      playerSequence = [];
+      isSimonActive = true;
+      const info = document.getElementById('simon-info');
+      if (info) info.innerText = `RONDE ${simonRound}: NEEM DE KLEUREN IN JE OP...`;
+      
+      simonSequence.push(Math.floor(Math.random() * 4));
+      playSimonSequence();
+    }
+
+    async function playSimonSequence() {
+      for (let i = 0; i < simonSequence.length; i++) {
+        await sleep(Math.max(250, 600 - simonRound * 40));
+        lightUpSimonPad(simonSequence[i]);
+      }
+      
+      await sleep(400);
+      isSimonActive = false;
+      const info = document.getElementById('simon-info');
+      if (info) info.innerText = `JOUW BEURT! SPEEL DE REEKS NA...`;
+    }
+
+    function lightUpSimonPad(index) {
+      const pad = document.getElementById(`pad-${index}`);
+      if (pad) {
+        pad.classList.add('lit');
+        setTimeout(() => {
+          pad.classList.remove('lit');
+        }, Math.max(180, 400 - simonRound * 30));
+      }
+    }
+
+    function handleSimonTap(index) {
+      if (isSimonActive) return;
+      
+      lightUpSimonPad(index);
+      playerSequence.push(index);
+      
+      const step = playerSequence.length - 1;
+      
+      if (playerSequence[step] !== simonSequence[step]) {
+        showGameResult(false, 'KLEURENCODE GEBROKEN! 🧠', 'Helaas! Je maakte een fout in de volgorde in ronde ' + simonRound + '. Neem 3 slokken!', 3);
+        return;
+      }
+      
+      if (playerSequence.length === simonSequence.length) {
+        simonRound++;
+        isSimonActive = true;
+        setTimeout(() => {
+          startNextSimonRound();
+        }, 1000);
+      }
+    }
+
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    // --- NETWERK MODE ---
+    function launchMultiplayer(host) {
+      const nameInput = document.getElementById('player-name-input');
+      const name = nameInput.value.trim();
+      if (!name) {
+        showToast('Voer eerst een naam in! 📛', true);
+        return;
+      }
+      
+      testModeActive = false;
+      isHost = host;
+      localPlayer = name;
+      currentMode = 'online';
+      
+      document.getElementById('selection-screen').style.display = 'none';
+      document.getElementById('app-viewport').style.display = 'flex';
+      document.getElementById('player-label').innerText = localPlayer;
+      document.getElementById('extra-btn').innerText = 'Menu';
+      
+      connectWebSocket();
+    }
+
+    function connectWebSocket() {
+      const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      
+      let wsUrl;
+      if (isLocal) {
+        wsUrl = `ws://localhost:8081`;
+      } else {
+        wsUrl = `${wsProtocol}//${window.location.hostname}`;
+      }
+      
+      ws = new WebSocket(wsUrl);
+
+      ws.onopen = () => {
+        if (isHost) {
+          ws.send(JSON.stringify({ action: 'CREATE_ROOM' }));
+        } else {
+          renderJoinPrompt();
+        }
+      };
+
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (data.type === 'ROOM_CREATED') {
+          joinRoom(data.roomId);
+        } else if (data.type === 'GAME_STATE') {
+          handleOnlineGameState(data.state);
+        }
+      };
+    }
+
+    function renderJoinPrompt() {
+      document.getElementById('game-screen-area').innerHTML = `
+        <div class="card-layout">
+          <div class="card-title">VOER KAMER CODE IN</div>
+          <input type="text" id="ws-code" class="config-input" placeholder="CODE" style="max-width: 260px; text-transform: uppercase;">
+          <button class="btn-game-option" onclick="submitJoinWS()" style="max-width: 260px; background: var(--primary);">JOIN KAMER</button>
+        </div>
+      `;
+    }
+
+    function submitJoinWS() {
+      const code = document.getElementById('ws-code').value.toUpperCase().trim();
+      if (!code) {
+        showToast('Voer een kamercode in! 🔑', true);
+        return;
+      }
+      joinRoom(code);
+    }
+
+    function joinRoom(code) {
+      ws.send(JSON.stringify({
+        action: 'JOIN_ROOM',
+        roomId: code,
+        name: localPlayer,
+        id: playerUuid
+      }));
+    }
+
+    function handleOnlineGameState(state) {
+      document.getElementById('game-title-banner').innerText = state.status.replace(/_/g, ' ');
+      
+      if (state.status === 'LOBBY') {
+        previousStatus = 'LOBBY';
+        if (isHost) {
+          document.getElementById('game-screen-area').innerHTML = `
+            <div class="card-layout">
+              <div class="card-title" style="font-size: 1.1rem; color: var(--accent);">KAMER CODE:</div>
+              <div style="font-size: 3rem; font-weight: 900; letter-spacing: 4px; color: var(--warning); margin: 10px 0;">${state.roomId}</div>
+              <p style="margin-bottom:20px; opacity:0.8; font-size: 0.95rem;">Geef deze code aan je vrienden!</p>
+              
+              <div style="margin-bottom: 20px;">
+                <div class="config-label" style="font-size: 0.8rem; margin-bottom: 5px;">Aantal spelers in lobby:</div>
+                <div style="font-weight: 800; font-size: 1.2rem; color: #fff;">${Object.keys(state.players).length} speler(s)</div>
+              </div>
+
+              <button class="btn-game-option" onclick="startOnlineGame()" style="max-width: 280px; background: var(--primary);">START SPEL 🚀</button>
+            </div>
+          `;
+        } else {
+          document.getElementById('game-screen-area').innerHTML = `
+            <div class="card-layout">
+              <p style="font-size: 1.1rem;">Verbonden met lobby <strong style="color: var(--warning);">${state.roomId}</strong></p>
+              <p style="margin-top:20px; color:var(--accent); font-weight: 800; animation: pulseBorder 1.5s infinite;">Wachten tot de host start...</p>
+              <div style="margin-top: 30px; font-size: 0.9rem; opacity: 0.7;">
+                Totaal aantal spelers: ${Object.keys(state.players).length}
+              </div>
+            </div>
+          `;
+        }
+      } else if (state.status === 'GAME_FINGER_ROULETTE') {
+        if (previousStatus !== 'GAME_FINGER_ROULETTE') {
+          previousStatus = 'GAME_FINGER_ROULETTE';
+          renderOnlineRoulette(state.activeContent.minigameData);
+        } else {
+          updateOnlineRouletteState(state);
+        }
+      } else if (state.status === 'FINISHED') {
+        previousStatus = 'FINISHED';
+        renderOnlineFinishedState(state);
+      }
+    }
+
+    function startOnlineGame() {
+      ws.send(JSON.stringify({ action: 'START_FINGER_ROULETTE' }));
+    }
+
+    function resetToLobby() {
+      ws.send(JSON.stringify({ action: 'RESET_TO_LOBBY' }));
+    }
+
+    function renderOnlineFinishedState(state) {
+      const result = state.lastResult || {
+        loserName: "Niemand",
+        loserId: "",
+        sips: 5,
+        message: "De ronde is beëindigd!"
+      };
+      
+      const isLoser = result.loserId === playerUuid;
+      const title = isLoser ? 'BOEM! VERLOREN! 🤢' : 'VEILIG! 🍻';
+      const badgeText = isLoser ? 'DRINKEN!' : 'VEILIG!';
+      const emoji = isLoser ? '🤢' : '🍻';
+      const sipsText = isLoser ? `🍷 JIJ DRINKT ${result.sips} SLOKKEN!` : `🎉 ${result.loserName} DRINKT ${result.sips} SLOKKEN!`;
+      
+      document.getElementById('game-screen-area').innerHTML = `
+        <div class="result-overlay" style="position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; z-index: 100;">
+          <div class="result-card ${isLoser ? 'lose-card' : 'win-card'}" style="margin: 0;">
+            <div class="result-badge ${isLoser ? 'lose' : 'win'}">${badgeText}</div>
+            <div class="sip-indicator" style="animation: bounceCup 1.5s infinite;">${emoji}</div>
+            <div class="result-title" style="color: ${isLoser ? 'var(--error)' : 'var(--success)'}">${title}</div>
+            <div class="result-msg">${result.message}</div>
+            
+            <div style="font-size: 1.15rem; font-weight:900; color:var(--warning); margin-bottom: 18px;">
+              ${sipsText}
+            </div>
+            
+            ${isHost ? `
+              <button class="btn-menu" style="max-width:200px; font-size:0.9rem; padding:12px 24px; margin: 10px 0 0 0; background: var(--primary); border-color: var(--primary);" onclick="resetToLobby()">
+                TERUG NAAR LOBBY ➔
+              </button>
+            ` : `
+              <p style="font-size:0.85rem; opacity:0.7;">Wachten tot de host de lobby herstart...</p>
+            `}
+          </div>
+        </div>
+      `;
+      
+      if (isLoser && result.sips > 0) {
+        addSips(result.sips);
+      }
+    }
+
+    function renderOnlineRoulette(data) {
+      document.getElementById('game-screen-area').innerHTML = `
+        <div class="touch-surface">
+          <div class="btn-big-target" id="online-target" style="width: 170px; height: 170px;">
+            <span id="online-text">Houd In</span>
+          </div>
+          <div id="player-ready-dots" style="display: flex; gap: 8px; margin-top: 25px; justify-content: center; width: 100%;"></div>
+        </div>
+      `;
+
+      const target = document.getElementById('online-target');
+      
+      function press(e) {
+        e.preventDefault();
+        target.classList.add('pressed');
+        ws.send(JSON.stringify({ action: 'FINGER_DOWN' }));
+      }
+
+      function release(e) {
+        e.preventDefault();
+        target.classList.remove('pressed');
+        ws.send(JSON.stringify({
+          action: 'FINGER_UP',
+          timestamp: Date.now()
+        }));
+      }
+
+      target.addEventListener('mousedown', press);
+      target.addEventListener('mouseup', release);
+      target.addEventListener('touchstart', press, { passive: false });
+      target.addEventListener('touchend', release, { passive: false });
+
+      // Start real-time visuele countdown en triggers
+      const countdownStart = data.countdownStartTimestamp;
+      const triggerRelease = data.triggerReleaseTimestamp;
+      let hasVibrated = false;
+
+      function updateTimerLoop() {
+        if (currentMode !== 'online' || previousStatus !== 'GAME_FINGER_ROULETTE') return;
+        
+        const now = Date.now();
+        const textEl = document.getElementById('online-text');
+        const targetEl = document.getElementById('online-target');
+        
+        if (textEl && targetEl) {
+          if (now < countdownStart) {
+            let left = Math.ceil((countdownStart - now) / 1000);
+            textEl.innerText = `START IN ${left}...`;
+            targetEl.style.borderColor = 'var(--primary)';
+          } else if (now < triggerRelease) {
+            textEl.innerHTML = 'HOUD VAST! 🤞';
+            targetEl.style.borderColor = 'var(--accent)';
+            targetEl.style.boxShadow = '0 0 20px var(--accent-glow)';
+          } else {
+            textEl.innerHTML = 'LAAT LOS!!! 🚨';
+            targetEl.style.borderColor = 'var(--error)';
+            targetEl.style.boxShadow = '0 0 35px var(--error)';
+            
+            if (!hasVibrated) {
+              hasVibrated = true;
+              playAlarmSound();
+              if (navigator.vibrate) {
+                navigator.vibrate(250);
+              }
+            }
+          }
+        }
+        requestAnimationFrame(updateTimerLoop);
+      }
+      requestAnimationFrame(updateTimerLoop);
+    }
+
+    function updateOnlineRouletteState(state) {
+      // Werk de lijst met spelers visueel bij (dots die groen kleuren als ze de knop ingedrukt houden)
+      const dotsContainer = document.getElementById('player-ready-dots');
+      if (!dotsContainer) return;
+      
+      let html = '';
+      Object.entries(state.players).forEach(([id, p]) => {
+        const color = p.isFingerDown ? 'var(--success)' : 'rgba(255,255,255,0.2)';
+        const shadow = p.isFingerDown ? '0 0 10px var(--success)' : 'none';
+        html += `
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+            <div style="width: 14px; height: 14px; border-radius: 50%; background: ${color}; box-shadow: ${shadow}; transition: all 0.2s;"></div>
+            <span style="font-size: 0.65rem; opacity: 0.8; max-width: 55px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${p.name}</span>
+          </div>
+        `;
+      });
+      dotsContainer.innerHTML = html;
+    }
+
+    function addSips(count) {
+      sipsCount += count;
+      document.getElementById('sip-label').innerText = `🍷 ${sipsCount} Slokken`;
+    }
+
+    function activateJoker() {
+      if (jokerUsed) return;
+      jokerUsed = true;
+      document.getElementById('joker-btn').innerText = 'Joker (0)';
+      document.getElementById('joker-btn').disabled = true;
+      showToast('🌟 JOKER GEACTIVEERD! Straf vervalt!', false);
+      sipsCount = Math.max(0, sipsCount - 3);
+      document.getElementById('sip-label').innerText = `🍷 ${sipsCount} Slokken`;
+    }
+
+    function resetTimers() {
+      clearInterval(loopInterval);
+      if (canvasLoop) cancelAnimationFrame(canvasLoop);
+    }
+  </script>
+</body>
+</html>
